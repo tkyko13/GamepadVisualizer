@@ -46,15 +46,15 @@ class ViewButton {
     }
 
     // frame num
-    // if (this.frameNum > 0) {
-    //   let f = this.frameNum;
-    //   if (f > 99) f = 99;
-    //   textAlign(CENTER, CENTER);
-    //   textSize(18);
-    //   fill(0);
-    //   noStroke();
-    //   text(f, 0, 0);
-    // }
+    if (this.frameNum > 0) {
+      let f = this.frameNum;
+      if (f > 99) f = 99;
+      textAlign(CENTER, CENTER);
+      textSize(18);
+      fill(0);
+      noStroke();
+      text(f, 0, 0);
+    }
 
     pop();
   }
