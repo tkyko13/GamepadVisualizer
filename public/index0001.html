@@ -1,0 +1,205 @@
+<!-- https://greggman.github.io/html5-gamepad-test/ -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+    <title>Gamepad Input</title>
+  </head>
+  <body>
+    <script>
+      let gamepadIndex = -1;
+      let cacheGamepad = null;
+      // const getGamepad = () => {
+      //   if (gamepadIndex >= 0) {
+      //     return navigator.getGamepads()[gamepadIndex];
+      //   } else {
+      //     return null;
+      //   }
+      // };
+      const updateGamepadInfo = () => {};
+      const getGamepad = () => {
+        const cGamePad =
+          gamepadIndex != -1 ? navigator.getGamepads()[gamepadIndex] : null;
+        if (cGamePad != null) {
+          const gamepadInfo = {
+            stick: {
+              up: cGamePad.buttons[12].pressed,
+              down: cGamePad.buttons[13].pressed,
+              left: cGamePad.buttons[14].pressed,
+              right: cGamePad.buttons[15].pressed,
+            },
+            buttons: [
+              cGamePad.buttons[2].pressed,
+              cGamePad.buttons[3].pressed,
+              cGamePad.buttons[5].pressed,
+              cGamePad.buttons[4].pressed,
+              cGamePad.buttons[0].pressed,
+              cGamePad.buttons[1].pressed,
+              cGamePad.buttons[7].pressed,
+              cGamePad.buttons[6].pressed,
+            ],
+          };
+          cacheGamepad = cGamePad;
+          return gamepadInfo;
+        }
+        return null;
+      };
+      let prePushButtons = [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+      ];
+      const buttonsPushFrame = [0, 0, 0, 0, 0, 0, 0, 0];
+      const buttonsReleaseFrame = [0, 0, 0, 0, 0, 0, 0, 0];
+
+      function setup() {
+        createCanvas(200, 100);
+
+        window.addEventListener('gamepadconnected', (e) => {
+          gamepadIndex = e.gamepad.index;
+          console.log(
+            'Gamepad connected at index %d: %s. %d buttons, %d axes.',
+            e.gamepad.index,
+            e.gamepad.id,
+            e.gamepad.buttons.length,
+            e.gamepad.axes.length
+          );
+        });
+        window.addEventListener('gamepaddisconnected', (e) => {
+          gamepadIndex = -1;
+          console.log('Gamepad disconnected');
+        });
+
+        frameRate(60);
+      }
+
+      function draw() {
+        background(230);
+
+        const cPushInfo = getGamepad();
+        if (cPushInfo) {
+          updateInfo(cPushInfo);
+          viewStick(cPushInfo.stick);
+          viewButtons(cPushInfo.buttons);
+          // viewHistory(gamepad);
+        }
+
+        // print(getFrameRate() + ', ' + String(getFrameRate()).slice(0, 6));
+        // text('fps: ' + String(getFrameRate()).slice(0, 6), 5, 15);
+      }
+
+      function updateInfo(pushInfo) {
+        for (let i = 0; i < pushInfo.buttons.length; i++) {
+          if (pushInfo.buttons[i]) {
+            if (prePushButtons[i] == false) {
+              // 押した瞬間
+              buttonsPushFrame[i] = 0;
+            }
+            buttonsPushFrame[i]++;
+          } else {
+            if (prePushButtons[i] == true) {
+              // 離した瞬間
+              buttonsReleaseFrame[i] = 0;
+            }
+            buttonsReleaseFrame[i]++;
+          }
+        }
+        prePushButtons = pushInfo.buttons;
+      }
+
+      // function viewStick(stick) {
+      //   const d = 15;
+
+      //   push();
+      //   translate(width / 4 - d, height / 2);
+      //   let x = 0;
+      //   let y = 0;
+      //   if (stick.left && !stick.right) x = -d;
+      //   else if (stick.right && !stick.left) x = d;
+      //   if (stick.up && !stick.down) y = -d;
+      //   else if (stick.down && !stick.up) y = d;
+      //   fill(255);
+      //   rect(-20, -20, 40, 40);
+      //   fill(230, 0, 0);
+      //   ellipse(x, y, 12, 12);
+      //   pop();
+      // }
+      function viewStick(stick) {
+        const sz = 30;
+        push();
+        translate(width / 4 - d, height / 2);
+        push();
+        viewButtons();
+        pop();
+        pop();
+      }
+
+      function viewButtons(buttons) {
+        const sz = 30;
+        push();
+        translate(width / 2 - 15, height / 2);
+        for (let i = 0; i < buttons.length; i++) {
+          if (buttons[i]) {
+            fill(255, 100, 100);
+          } else {
+            fill(255);
+          }
+          const x = (i % 4) * sz;
+          const y = int(i / 4) * sz - 15;
+          push();
+          translate(x, y);
+          viewBtn(
+            sz,
+            buttons[i],
+            prePushButtons[i],
+            buttonsPushFrame[i],
+            buttonsReleaseFrame[i]
+          );
+          pop();
+        }
+        pop();
+      }
+
+      function viewBtn(sz, isPush, isPPush, pushFrame, releaseFrame) {
+        if (isPush) {
+          fill(255, 100, 100);
+        } else {
+          fill(255);
+        }
+        stroke(0);
+        ellipse(0, 0, sz);
+
+        // 残像
+        // if (!isPush) {
+        if (releaseFrame > 0 && releaseFrame < 60) {
+          const rf = releaseFrame / 60;
+          // fill(255, rf * 255, rf * 255);
+          fill(255, 100, 100);
+          noStroke();
+          ellipse(0, 0, sz - rf * sz);
+        }
+        // }
+
+        // frame num
+        // let f = pushFrame;
+        // if (f > 99) f = 99;
+        // textAlign(CENTER, CENTER);
+        // textSize(18);
+        // fill(0);
+        // noStroke();
+        // text(f, 0, 0);
+      }
+
+      function viewHistory(gamepad) {}
+    </script>
+  </body>
+</html>
