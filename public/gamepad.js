@@ -200,7 +200,7 @@ class Gamepad {
     const historyItem =
     {
       passFrame: this.historyFrame,
-      pushes: prePushes,
+      pushes: pushes,
       pushesIndex: pushesIndex
     };
     this.history.unshift(historyItem);
