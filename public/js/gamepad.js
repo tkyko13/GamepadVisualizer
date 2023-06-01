@@ -1,7 +1,10 @@
 class Gamepad {
   constructor() {
     this.type = 'ps'; //'xbox';
+    this.init();
+  }
 
+  init() {
     this.index = -1;
     this.cacheGamepad = null;
     this.pushes = null;
@@ -18,7 +21,7 @@ class Gamepad {
   }
 
   disconnect() {
-    this.index = -1;
+    this.init();
   }
 
   update() {
@@ -43,6 +46,11 @@ class Gamepad {
 
   createInfo(gamepad, preInfo = null) {
     if (!gamepad) return null;
+
+    // osならaxes[9]を使うためなかったら回避
+    if (gamepad.axes.length < 9) {
+      this.type = 'xbox';
+    }
 
     const btnLine = this.type == 'ps' ? [0, 3, 5, 4, 1, 2, 7, 6] : [2, 3, 5, 4, 0, 1, 7, 6];
 
