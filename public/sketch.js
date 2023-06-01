@@ -1,4 +1,5 @@
 let gamepad = new Gamepad();
+let stick = null;
 let btns = null;
 
 function setup() {
@@ -26,27 +27,28 @@ function draw() {
 
   gamepad.update();
   if (gamepad.info) {
+    if (stick == null) {
+      // createStick();
+      let cx = width / 4 - 8, cy = height / 2;
+      stick = new ViewStick(cx, cy, 60);
+    }
+    stick.update(gamepad.info.stick.vec);
+    stick.draw();
+
     if (btns == null) {
       createBtns();
     }
-
     btns.forEach((vb, i) => {
       vb.update(gamepad.pushes[i]);
       vb.frameNum = -1;
     });
-    gamepad.history.forEach(hi => {
-      hi.pushesIndex.forEach(pi => {
-        if (btns[pi].frameNum == -1) {
-          btns[pi].frameNum = hi.passFrame;
-        }
-      });
-    });
-
-    const sz = 35;
-    const cx = width / 4 - 8, cy = height / 2;
-    noStroke();
-    fill(255);
-    rect(cx - sz, cy - sz, sz * 2, sz * 2);
+    // gamepad.history.forEach(hi => {
+    //   hi.pushesIndex.forEach(pi => {
+    //     if (btns[pi].frameNum == -1) {
+    //       btns[pi].frameNum = hi.passFrame;
+    //     }
+    //   });
+    // });
     btns.forEach(e => {
       e.draw();
     });
@@ -58,20 +60,23 @@ function draw() {
 function createBtns() {
   btns = [];
   const d = 25;
-  const sz = 30;
+  let sz = 20;
   let cx = width / 4 - 8, cy = height / 2;
-  // stick
-  for (let i = 0; i < 8; i++) {
-    const x = cx + cos(radians(i / 8.0 * 360 - 90)) * d * 1.1;
-    const y = cy + sin(radians(i / 8.0 * 360 - 90)) * d * 1.1;
-    const vb = new ViewButton(x, y, sz);
-    vb.drawFrame = false;
-    btns.push(vb);
-  }
-  const vb = new ViewButton(cx, cy, sz);
-  vb.drawFrame = false;
-  btns.push(vb);
+
+  // stick button
+  // for (let i = 0; i < 8; i++) {
+  //   const x = cx + cos(radians(i / 8.0 * 360 - 90)) * d * 1.1;
+  //   const y = cy + sin(radians(i / 8.0 * 360 - 90)) * d * 1.1;
+  //   const vb = new ViewButton(x, y, sz);
+  //   // vb.drawFrame = false;
+  //   btns.push(vb);
+  // }
+  // const vb = new ViewButton(cx, cy, sz);
+  // // vb.drawFrame = false;
+  // btns.push(vb);
+
   // buttons
+  sz = 30;
   cx = width / 2;
   cy = height / 2;
   for (let i = 0; i < gamepad.info.buttons.length; i++) {
@@ -79,6 +84,7 @@ function createBtns() {
     const y = cy + int(i / 4) * sz - 15;
     const vb = new ViewButton(x, y, sz);
     // vb.drawFrame = false;
-    btns.push(vb);
+    // btns.push(vb);
+    btns[i + 9] = vb;
   }
 }

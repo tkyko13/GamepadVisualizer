@@ -1,5 +1,7 @@
 class Gamepad {
   constructor() {
+    this.type = 'ps'; //'xbox';
+
     this.index = -1;
     this.cacheGamepad = null;
     this.pushes = null;
@@ -42,9 +44,7 @@ class Gamepad {
   createInfo(gamepad, preInfo = null) {
     if (!gamepad) return null;
 
-    // コントローラーによって変える
-    const type = 'ps'; //'xbox';
-    const btnLine = type == 'ps' ? [0, 3, 5, 4, 1, 2, 7, 6] : [2, 3, 5, 4, 0, 1, 7, 6];
+    const btnLine = this.type == 'ps' ? [0, 3, 5, 4, 1, 2, 7, 6] : [2, 3, 5, 4, 0, 1, 7, 6];
 
     const info = {
       stick: {
@@ -56,6 +56,7 @@ class Gamepad {
           pushPassFrame: 0,
           // releasePassFrame: 0,
         }],
+        vec: { x: 0, y: 0 },
         tenkey: 5,
       },
       buttons: [
@@ -89,59 +90,89 @@ class Gamepad {
       }
       return r;
     };
-    if (type == 'ps') {
+
+    let dir = 8;
+    if (this.type == 'ps') {
       const sa = g.axes[9];
-      const sar = round((sa + 1) / 2 * 7);
-      switch (sar) {
-        case 0:
-          info.stick.tenkey = 8;
-          info.stick.dir4 = [true, false, false, false];
-          info.stick.dir8 = getDir8(0, preInfo);
-          break;
-        case 1:
-          info.stick.tenkey = 9;
-          info.stick.dir4 = [true, true, false, false];
-          info.stick.dir8 = getDir8(1, preInfo);
-          break;
-        case 2:
-          info.stick.tenkey = 6;
-          info.stick.dir4 = [false, true, false, false];
-          info.stick.dir8 = getDir8(2, preInfo);
-          break;
-        case 3:
-          info.stick.tenkey = 3;
-          info.stick.dir4 = [false, true, true, false];
-          info.stick.dir8 = getDir8(3, preInfo);
-          break;
-        case 4:
-          info.stick.tenkey = 2;
-          info.stick.dir4 = [false, false, true, false];
-          info.stick.dir8 = getDir8(4, preInfo);
-          break;
-        case 5:
-          info.stick.tenkey = 1;
-          info.stick.dir4 = [false, false, true, true];
-          info.stick.dir8 = getDir8(5, preInfo);
-          break;
-        case 6:
-          info.stick.tenkey = 4;
-          info.stick.dir4 = [false, false, false, true];
-          info.stick.dir8 = getDir8(6, preInfo);
-          break;
-        case 7:
-          info.stick.tenkey = 7;
-          info.stick.dir4 = [true, false, false, true];
-          info.stick.dir8 = getDir8(7, preInfo);
-          break;
-        case 8:
-          info.stick.tenkey = 5;
-          info.stick.dir4 = [false, false, false, false];
-          info.stick.dir8 = getDir8(8, preInfo);
-          break;
-      }
+      dir = round((sa + 1) / 2 * 7);
     }
     else {
-      // TODO
+      const up = g.buttons[12].pressed;
+      const down = g.buttons[13].pressed;
+      const left = g.buttons[14].pressed;
+      const right = g.buttons[15].pressed;
+      if (up && !down) {
+        if (left) dir = 7;
+        else if (right) dir = 1;
+        else dir = 0;
+      }
+      else if (right && !left) {
+        if (down) dir = 3;
+        else dir = 2;
+      }
+      else if (down) {
+        if (left) dir = 5;
+        else dir = 4;
+      }
+      else if (left) {
+        dir = 6;
+      }
+    }
+    switch (dir) {
+      case 0:
+        info.stick.tenkey = 8;
+        info.stick.dir4 = [true, false, false, false];
+        info.stick.dir8 = getDir8(0, preInfo);
+        info.stick.vec = { x: 0, y: -1 };
+        break;
+      case 1:
+        info.stick.tenkey = 9;
+        info.stick.dir4 = [true, true, false, false];
+        info.stick.dir8 = getDir8(1, preInfo);
+        info.stick.vec = { x: 1, y: -1 };
+        break;
+      case 2:
+        info.stick.tenkey = 6;
+        info.stick.dir4 = [false, true, false, false];
+        info.stick.dir8 = getDir8(2, preInfo);
+        info.stick.vec = { x: 1, y: 0 };
+        break;
+      case 3:
+        info.stick.tenkey = 3;
+        info.stick.dir4 = [false, true, true, false];
+        info.stick.dir8 = getDir8(3, preInfo);
+        info.stick.vec = { x: 1, y: 1 };
+        break;
+      case 4:
+        info.stick.tenkey = 2;
+        info.stick.dir4 = [false, false, true, false];
+        info.stick.dir8 = getDir8(4, preInfo);
+        info.stick.vec = { x: 0, y: 1 };
+        break;
+      case 5:
+        info.stick.tenkey = 1;
+        info.stick.dir4 = [false, false, true, true];
+        info.stick.dir8 = getDir8(5, preInfo);
+        info.stick.vec = { x: -1, y: 1 };
+        break;
+      case 6:
+        info.stick.tenkey = 4;
+        info.stick.dir4 = [false, false, false, true];
+        info.stick.dir8 = getDir8(6, preInfo);
+        info.stick.vec = { x: -1, y: 0 };
+        break;
+      case 7:
+        info.stick.tenkey = 7;
+        info.stick.dir4 = [true, false, false, true];
+        info.stick.dir8 = getDir8(7, preInfo);
+        info.stick.vec = { x: -1, y: -1 };
+        break;
+      case 8:
+        info.stick.tenkey = 5;
+        info.stick.dir4 = [false, false, false, false];
+        info.stick.dir8 = getDir8(8, preInfo);
+        info.stick.vec = { x: 0, y: 0 };
+        break;
     }
     // print(sa + ":" + info.stick.tenkey);
     // buttons

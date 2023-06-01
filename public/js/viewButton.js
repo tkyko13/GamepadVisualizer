@@ -29,8 +29,8 @@ class ViewButton {
       fill(255);
     }
     if (this.drawFrame) {
-      // stroke(0);
-      noStroke();
+      stroke(0);
+      // noStroke();
       ellipse(0, 0, this.sz);
     }
 
@@ -46,15 +46,15 @@ class ViewButton {
     }
 
     // frame num
-    if (this.frameNum > 0) {
-      let f = this.frameNum;
-      if (f > 99) f = 99;
-      textAlign(CENTER, CENTER);
-      textSize(18);
-      fill(0);
-      noStroke();
-      text(f, 0, 0);
-    }
+    // if (this.frameNum > 0) {
+    //   let f = this.frameNum;
+    //   if (f > 99) f = 99;
+    //   textAlign(CENTER, CENTER);
+    //   textSize(18);
+    //   fill(0);
+    //   noStroke();
+    //   text(f, 0, 0);
+    // }
 
     pop();
   }
