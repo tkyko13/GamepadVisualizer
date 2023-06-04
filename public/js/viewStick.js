@@ -30,7 +30,7 @@ class ViewStick {
     fill(255);
     rect(-this.sz / 2, -this.sz / 2, this.sz, this.sz);
 
-    fill(230, 200, 200);
+    fill(150);
     ellipse(pt.x, pt.y, this.sz / 3);
 
     this.stickVecHistory.forEach((e, i, a) => {

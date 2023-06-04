@@ -7,6 +7,7 @@ class ViewButton {
     this.isPush = false;
     this.passPushFrame = 0;
     this.frameNum = -1;
+    this.color = color(255, 180, 180);
   }
 
   update(isPush) {
@@ -17,14 +18,13 @@ class ViewButton {
     else if (this.passPushFrame < 60) {
       this.passPushFrame++;
     }
-
   }
 
   draw() {
     push();
     translate(this.x, this.y);
     if (this.isPush) {
-      fill(255, 100, 100);
+      fill(this.color);
     } else {
       fill(255);
     }
@@ -39,7 +39,7 @@ class ViewButton {
       if (this.passPushFrame > 0 && this.passPushFrame < 60) {
         const rf = this.passPushFrame / 60;
         // fill(255, rf * 255, rf * 255);
-        fill(255, 180, 180);
+        fill(this.color);
         noStroke();
         ellipse(0, 0, this.sz - rf * this.sz);
       }

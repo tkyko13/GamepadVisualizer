@@ -6,7 +6,7 @@ class Gamepad {
 
   init() {
     this.index = -1;
-    this.cacheGamepad = null;
+    // this.cacheGamepad = null;
     this.pushes = null;
     this.info = null;
     // this.preInfo = null;
@@ -14,22 +14,51 @@ class Gamepad {
     // this.pushIntervalFrameCount = 0;
     this.history = [];
     this.historyFrame = 0;
+
+    this.btnLine = this.type == 'ps' ? [0, 3, 5, 4, 1, 2, 7, 6] : [2, 3, 5, 4, 0, 1, 7, 6];
+
+    this.testMode = true;//false;
   }
 
   connect(index) {
     this.index = index;
   }
 
+  connectTest() {
+    this.testMode = true;
+  }
+
   disconnect() {
     this.init();
   }
 
-  update() {
-    if (this.index == -1) return;
+  getGamepad() {
+    if (!this.testMode) {
+      if (this.index == -1) return null;
+      else return navigator.getGamepads()[this.index];
+    }
+    else {
+      const r = () => random();
+      const testData = {
 
-    const cGamepad = navigator.getGamepads()[this.index];
-    this.cacheGamepad = cGamepad;
-    const cInfo = this.createInfo(cGamepad, this.info);
+      };
+      return testData;
+    }
+  }
+
+  update() {
+    if (this.index == -1 && this.testMode == false) return;
+
+    let cInfo;
+    if (!this.testMode) {
+      const cGamepad = navigator.getGamepads()[this.index];
+      // this.cacheGamepad = cGamepad;
+      cInfo = this.createInfo(cGamepad, this.info);
+    }
+    else {
+      cInfo = this.createInfoTest(this.info);
+    }
+
     const cPushes = this.createPushes(cInfo);
 
     if (this.info) {
@@ -52,10 +81,9 @@ class Gamepad {
       this.type = 'xbox';
     }
 
-    const btnLine = this.type == 'ps' ? [0, 3, 5, 4, 1, 2, 7, 6] : [2, 3, 5, 4, 0, 1, 7, 6];
-
     const info = {
       stick: {
+        dir: 0,
         dir4: [false, false, false, false],
         dir8: [{
           pressed: false,
@@ -81,23 +109,6 @@ class Gamepad {
     const g = gamepad;
     // stick(ps)
     // info.stick = {};
-    const getDir8 = (pressIndex, preInfo = null) => {
-      const r = [];
-      for (let i = 0; i < 9; i++) {
-        r[i] = {};
-        r[i].pressed = (i == pressIndex);
-        if (preInfo) {
-          r[i].push = (r[i].pressed == true && preInfo.stick.dir8[i].pressed == false);
-          if (r[i].push) {
-            r[i].pushPassFrame = 0;
-          }
-          else if (r[i].pushPassFrame < 255) {
-            r[i].pushPassFrame = preInfo.stick.dir8[i].pushPassFrame + 1;
-          }
-        }
-      }
-      return r;
-    };
 
     let dir = 8;
     if (this.type == 'ps') {
@@ -126,66 +137,11 @@ class Gamepad {
         dir = 6;
       }
     }
-    switch (dir) {
-      case 0:
-        info.stick.tenkey = 8;
-        info.stick.dir4 = [true, false, false, false];
-        info.stick.dir8 = getDir8(0, preInfo);
-        info.stick.vec = { x: 0, y: -1 };
-        break;
-      case 1:
-        info.stick.tenkey = 9;
-        info.stick.dir4 = [true, true, false, false];
-        info.stick.dir8 = getDir8(1, preInfo);
-        info.stick.vec = { x: 1, y: -1 };
-        break;
-      case 2:
-        info.stick.tenkey = 6;
-        info.stick.dir4 = [false, true, false, false];
-        info.stick.dir8 = getDir8(2, preInfo);
-        info.stick.vec = { x: 1, y: 0 };
-        break;
-      case 3:
-        info.stick.tenkey = 3;
-        info.stick.dir4 = [false, true, true, false];
-        info.stick.dir8 = getDir8(3, preInfo);
-        info.stick.vec = { x: 1, y: 1 };
-        break;
-      case 4:
-        info.stick.tenkey = 2;
-        info.stick.dir4 = [false, false, true, false];
-        info.stick.dir8 = getDir8(4, preInfo);
-        info.stick.vec = { x: 0, y: 1 };
-        break;
-      case 5:
-        info.stick.tenkey = 1;
-        info.stick.dir4 = [false, false, true, true];
-        info.stick.dir8 = getDir8(5, preInfo);
-        info.stick.vec = { x: -1, y: 1 };
-        break;
-      case 6:
-        info.stick.tenkey = 4;
-        info.stick.dir4 = [false, false, false, true];
-        info.stick.dir8 = getDir8(6, preInfo);
-        info.stick.vec = { x: -1, y: 0 };
-        break;
-      case 7:
-        info.stick.tenkey = 7;
-        info.stick.dir4 = [true, false, false, true];
-        info.stick.dir8 = getDir8(7, preInfo);
-        info.stick.vec = { x: -1, y: -1 };
-        break;
-      case 8:
-        info.stick.tenkey = 5;
-        info.stick.dir4 = [false, false, false, false];
-        info.stick.dir8 = getDir8(8, preInfo);
-        info.stick.vec = { x: 0, y: 0 };
-        break;
-    }
-    // print(sa + ":" + info.stick.tenkey);
+    info.stick = this.dirToStickInfo(dir, preInfo);
+
     // buttons
     // info.buttons = [];
-    btnLine.forEach((e, i) => {
+    this.btnLine.forEach((e, i) => {
       info.buttons[i] = {};
       info.buttons[i].pressed = g.buttons[e].pressed;
       if (preInfo) {
@@ -200,6 +156,121 @@ class Gamepad {
     });
 
     return info;
+  }
+
+  createInfoTest(preInfo = null) {
+    if (preInfo && random() < 0.8) {
+      preInfo.stick.dir8.forEach(e => {
+        // e.pressed = false;
+        e.push = false;
+      });
+      preInfo.buttons.forEach(e => {
+        // e.pressed = false;
+        e.push = false;
+      });
+      return preInfo;
+    }
+
+    const info = {};
+    info.stick = this.dirToStickInfo(floor(random(0, 9)), preInfo);
+    info.buttons = [];
+    this.btnLine.forEach((e, i) => {
+      const btnInfo = {};
+      btnInfo.pressed = (random() < 0.1);
+      if (preInfo) {
+        btnInfo.push = (preInfo.buttons[i].pressed == false && btnInfo.pressed == true);
+      }
+      else {
+        btnInfo.push = true;
+      }
+      if (!preInfo || btnInfo.pressed) {
+        btnInfo.pushPassFrame = 0;
+      }
+      else {
+        btnInfo.pushPassFrame = preInfo.buttons[i].pushPassFrame + 1;
+      }
+      info.buttons[i] = btnInfo;
+    });
+
+    return info;
+  }
+
+  dirToStickInfo(dir, preInfo = null) {
+    const stick = {};
+    const getDir8 = (pressIndex, preInfo = null) => {
+      const r = [];
+      for (let i = 0; i < 9; i++) {
+        r[i] = {};
+        r[i].pressed = (i == pressIndex);
+        if (preInfo) {
+          r[i].push = (r[i].pressed == true && preInfo.stick.dir8[i].pressed == false);
+          if (r[i].push) {
+            r[i].pushPassFrame = 0;
+          }
+          else if (r[i].pushPassFrame < 255) {
+            r[i].pushPassFrame = preInfo.stick.dir8[i].pushPassFrame + 1;
+          }
+        }
+      }
+      return r;
+    };
+    switch (dir) {
+      case 0:
+        stick.tenkey = 8;
+        stick.dir4 = [true, false, false, false];
+        stick.dir8 = getDir8(0, preInfo);
+        stick.vec = { x: 0, y: -1 };
+        break;
+      case 1:
+        stick.tenkey = 9;
+        stick.dir4 = [true, true, false, false];
+        stick.dir8 = getDir8(1, preInfo);
+        stick.vec = { x: 1, y: -1 };
+        break;
+      case 2:
+        stick.tenkey = 6;
+        stick.dir4 = [false, true, false, false];
+        stick.dir8 = getDir8(2, preInfo);
+        stick.vec = { x: 1, y: 0 };
+        break;
+      case 3:
+        stick.tenkey = 3;
+        stick.dir4 = [false, true, true, false];
+        stick.dir8 = getDir8(3, preInfo);
+        stick.vec = { x: 1, y: 1 };
+        break;
+      case 4:
+        stick.tenkey = 2;
+        stick.dir4 = [false, false, true, false];
+        stick.dir8 = getDir8(4, preInfo);
+        stick.vec = { x: 0, y: 1 };
+        break;
+      case 5:
+        stick.tenkey = 1;
+        stick.dir4 = [false, false, true, true];
+        stick.dir8 = getDir8(5, preInfo);
+        stick.vec = { x: -1, y: 1 };
+        break;
+      case 6:
+        stick.tenkey = 4;
+        stick.dir4 = [false, false, false, true];
+        stick.dir8 = getDir8(6, preInfo);
+        stick.vec = { x: -1, y: 0 };
+        break;
+      case 7:
+        stick.tenkey = 7;
+        stick.dir4 = [true, false, false, true];
+        stick.dir8 = getDir8(7, preInfo);
+        stick.vec = { x: -1, y: -1 };
+        break;
+      case 8:
+        stick.tenkey = 5;
+        stick.dir4 = [false, false, false, false];
+        stick.dir8 = getDir8(8, preInfo);
+        stick.vec = { x: 0, y: 0 };
+        break;
+    }
+    return stick;
   }
 
   createPushes(info) {

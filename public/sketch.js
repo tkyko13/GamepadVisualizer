@@ -23,14 +23,14 @@ function setup() {
 }
 
 function draw() {
-  background(230);
+  // background(230);
 
   gamepad.update();
   if (gamepad.info) {
     if (stick == null) {
       // createStick();
-      let cx = width / 4 - 8, cy = height / 2;
-      stick = new ViewStick(cx, cy, 60);
+      let cx = width / 4 - 10, cy = height / 2;
+      stick = new ViewStick(cx, cy, 70);
     }
     stick.update(gamepad.info.stick.vec);
     stick.draw();
@@ -76,13 +76,17 @@ function createBtns() {
   // btns.push(vb);
 
   // buttons
-  sz = 30;
-  cx = width / 2;
+  sz = 35;
+  cx = width / 2 - 10;
   cy = height / 2;
   for (let i = 0; i < gamepad.info.buttons.length; i++) {
     const x = cx + (i % 4) * sz;
     const y = cy + int(i / 4) * sz - 15;
     const vb = new ViewButton(x, y, sz);
+    if (i % 4 == 0) vb.color = color(180, 180, 255);
+    else if (i % 4 == 1) vb.color = color(250, 250, 80);
+    else if (i % 4 == 2) vb.color = color(255, 180, 180);
+    else if (i % 4 == 3) vb.color = color(180, 255, 180);
     // vb.drawFrame = false;
     // btns.push(vb);
     btns[i + 9] = vb;
