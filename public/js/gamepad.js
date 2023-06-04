@@ -17,7 +17,7 @@ class Gamepad {
 
     this.btnLine = this.type == 'ps' ? [0, 3, 5, 4, 1, 2, 7, 6] : [2, 3, 5, 4, 0, 1, 7, 6];
 
-    this.testMode = true;//false;
+    this.testMode = false;//false;
   }
 
   connect(index) {
