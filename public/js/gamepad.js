@@ -15,13 +15,21 @@ class Gamepad {
     this.history = [];
     this.historyFrame = 0;
 
-    this.btnLine = this.type == 'ps' ? [0, 3, 5, 4, 1, 2, 7, 6] : [2, 3, 5, 4, 0, 1, 7, 6];
+    this.btnLine = [];
 
-    this.testMode = false;//false;
+    this.testMode = false; //false;
   }
 
   connect(index) {
     this.index = index;
+
+    // osならaxes[9]を使うためなかったら回避
+    const gamepad = this.getGamepad();
+    if (gamepad.axes.length < 9) {
+      this.type = 'xbox';
+      this.btnLine =
+        this.type == 'ps' ? [0, 3, 5, 4, 1, 2, 7, 6] : [2, 3, 5, 4, 0, 1, 7, 6];
+    }
   }
 
   connectTest() {
@@ -36,12 +44,9 @@ class Gamepad {
     if (!this.testMode) {
       if (this.index == -1) return null;
       else return navigator.getGamepads()[this.index];
-    }
-    else {
+    } else {
       const r = () => random();
-      const testData = {
-
-      };
+      const testData = {};
       return testData;
     }
   }
@@ -54,8 +59,7 @@ class Gamepad {
       const cGamepad = navigator.getGamepads()[this.index];
       // this.cacheGamepad = cGamepad;
       cInfo = this.createInfo(cGamepad, this.info);
-    }
-    else {
+    } else {
       cInfo = this.createInfoTest(this.info);
     }
 
@@ -76,22 +80,19 @@ class Gamepad {
   createInfo(gamepad, preInfo = null) {
     if (!gamepad) return null;
 
-    // osならaxes[9]を使うためなかったら回避
-    if (gamepad.axes.length < 9) {
-      this.type = 'xbox';
-    }
-
     const info = {
       stick: {
         dir: 0,
         dir4: [false, false, false, false],
-        dir8: [{
-          pressed: false,
-          push: false,
-          // release: false,
-          pushPassFrame: 0,
-          // releasePassFrame: 0,
-        }],
+        dir8: [
+          {
+            pressed: false,
+            push: false,
+            // release: false,
+            pushPassFrame: 0,
+            // releasePassFrame: 0,
+          },
+        ],
         vec: { x: 0, y: 0 },
         tenkey: 5,
       },
@@ -102,7 +103,7 @@ class Gamepad {
           // release: false,
           pushPassFrame: 0,
           // releasePassFrame: 0,
-        }
+        },
       ],
     };
 
@@ -113,9 +114,8 @@ class Gamepad {
     let dir = 8;
     if (this.type == 'ps') {
       const sa = g.axes[9];
-      dir = round((sa + 1) / 2 * 7);
-    }
-    else {
+      dir = round(((sa + 1) / 2) * 7);
+    } else {
       const up = g.buttons[12].pressed;
       const down = g.buttons[13].pressed;
       const left = g.buttons[14].pressed;
@@ -124,16 +124,13 @@ class Gamepad {
         if (left) dir = 7;
         else if (right) dir = 1;
         else dir = 0;
-      }
-      else if (right && !left) {
+      } else if (right && !left) {
         if (down) dir = 3;
         else dir = 2;
-      }
-      else if (down) {
+      } else if (down) {
         if (left) dir = 5;
         else dir = 4;
-      }
-      else if (left) {
+      } else if (left) {
         dir = 6;
       }
     }
@@ -145,11 +142,11 @@ class Gamepad {
       info.buttons[i] = {};
       info.buttons[i].pressed = g.buttons[e].pressed;
       if (preInfo) {
-        info.buttons[i].push = g.buttons[e].pressed == true && preInfo.buttons[i].pressed == false;
+        info.buttons[i].push =
+          g.buttons[e].pressed == true && preInfo.buttons[i].pressed == false;
         if (info.buttons[i].push) {
           info.buttons[i].pushPassFrame = 0;
-        }
-        else if (info.buttons[i].pushPassFrame < 255) {
+        } else if (info.buttons[i].pushPassFrame < 255) {
           info.buttons[i].pushPassFrame = preInfo.buttons[i].pushPassFrame + 1;
         }
       }
@@ -160,11 +157,11 @@ class Gamepad {
 
   createInfoTest(preInfo = null) {
     if (preInfo && random() < 0.8) {
-      preInfo.stick.dir8.forEach(e => {
+      preInfo.stick.dir8.forEach((e) => {
         // e.pressed = false;
         e.push = false;
       });
-      preInfo.buttons.forEach(e => {
+      preInfo.buttons.forEach((e) => {
         // e.pressed = false;
         e.push = false;
       });
@@ -176,17 +173,16 @@ class Gamepad {
     info.buttons = [];
     this.btnLine.forEach((e, i) => {
       const btnInfo = {};
-      btnInfo.pressed = (random() < 0.1);
+      btnInfo.pressed = random() < 0.1;
       if (preInfo) {
-        btnInfo.push = (preInfo.buttons[i].pressed == false && btnInfo.pressed == true);
-      }
-      else {
+        btnInfo.push =
+          preInfo.buttons[i].pressed == false && btnInfo.pressed == true;
+      } else {
         btnInfo.push = true;
       }
       if (!preInfo || btnInfo.pressed) {
         btnInfo.pushPassFrame = 0;
-      }
-      else {
+      } else {
         btnInfo.pushPassFrame = preInfo.buttons[i].pushPassFrame + 1;
       }
       info.buttons[i] = btnInfo;
@@ -201,13 +197,13 @@ class Gamepad {
       const r = [];
       for (let i = 0; i < 9; i++) {
         r[i] = {};
-        r[i].pressed = (i == pressIndex);
+        r[i].pressed = i == pressIndex;
         if (preInfo) {
-          r[i].push = (r[i].pressed == true && preInfo.stick.dir8[i].pressed == false);
+          r[i].push =
+            r[i].pressed == true && preInfo.stick.dir8[i].pressed == false;
           if (r[i].push) {
             r[i].pushPassFrame = 0;
-          }
-          else if (r[i].pushPassFrame < 255) {
+          } else if (r[i].pushPassFrame < 255) {
             r[i].pushPassFrame = preInfo.stick.dir8[i].pushPassFrame + 1;
           }
         }
@@ -307,11 +303,10 @@ class Gamepad {
     pushes.forEach((e, i) => {
       if (e) pushesIndex.push(i);
     });
-    const historyItem =
-    {
+    const historyItem = {
       passFrame: this.historyFrame,
       pushes: pushes,
-      pushesIndex: pushesIndex
+      pushesIndex: pushesIndex,
     };
     this.history.unshift(historyItem);
     if (this.history.length > 10) {
@@ -319,5 +314,4 @@ class Gamepad {
     }
     this.historyFrame = 0;
   }
-
 }
