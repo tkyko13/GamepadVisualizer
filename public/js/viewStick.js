@@ -37,7 +37,7 @@ class ViewStick {
       if (i == 0) return;
       const pt = this.getPt(e, d);
       const ppt = this.getPt(a[i - 1], d);
-      strokeWeight(2.5 - i / this.historyLength * 2.5);
+      strokeWeight(3 - i / this.historyLength * 3);
       // stroke(230, 100, 100);
       line(pt.x, pt.y, ppt.x, ppt.y);
     });
