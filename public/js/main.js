@@ -18,7 +18,7 @@ function setup() {
     createCanvas(250, 100);
   }
 
-  layoutType = params.get('layoutType') ? params.get('layoutType') : 'arcade';
+  layoutType = params.get('layout') ? params.get('layout') : 'arcade';
   switch (layoutType) {
     case 'arcade':
       gamepad.type = 'xbox';
