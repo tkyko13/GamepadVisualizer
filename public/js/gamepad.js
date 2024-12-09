@@ -15,6 +15,13 @@ class Gamepad {
     this.history = [];
     this.historyFrame = 0;
 
+    this.axesThreshold = 0.5;
+    this.stickAttach = {
+      up: 12,
+      down: 13,
+      left: 14,
+      right: 15
+    };
     this.btnLine = [];
 
     this.testMode = false; //false;
@@ -25,11 +32,11 @@ class Gamepad {
 
     // osならaxes[9]を使うためなかったら回避
     const gamepad = this.getGamepad();
-    if (gamepad.axes.length < 9) {
+    if (gamepad.axes.length < 2) {
       this.type = 'xbox';
-      this.btnLine =
-        this.type == 'ps' ? [0, 3, 5, 4, 1, 2, 7, 6] : [2, 3, 5, 4, 0, 1, 7, 6];
     }
+    this.btnLine =
+      this.type == 'ps' ? [0, 3, 5, 4, 1, 2, 7, 6] : [2, 3, 5, 4, 0, 1, 7, 6];
   }
 
   connectTest() {
@@ -112,27 +119,32 @@ class Gamepad {
     // info.stick = {};
 
     let dir = 8;
+    let up = false, down = false, left = false, right = false;
     if (this.type == 'ps') {
-      const sa = g.axes[9];
-      dir = round(((sa + 1) / 2) * 7);
+      // const sa = g.axes[9];
+      // dir = round(((sa + 1) / 2) * 7);
+      up = g.axes[1] < -this.axesThreshold;
+      down = g.axes[1] > this.axesThreshold;
+      left = g.axes[0] < -this.axesThreshold;
+      right = g.axes[0] > this.axesThreshold;
     } else {
-      const up = g.buttons[12].pressed;
-      const down = g.buttons[13].pressed;
-      const left = g.buttons[14].pressed;
-      const right = g.buttons[15].pressed;
-      if (up && !down) {
-        if (left) dir = 7;
-        else if (right) dir = 1;
-        else dir = 0;
-      } else if (right && !left) {
-        if (down) dir = 3;
-        else dir = 2;
-      } else if (down) {
-        if (left) dir = 5;
-        else dir = 4;
-      } else if (left) {
-        dir = 6;
-      }
+      up = g.buttons[this.stickAttach.up].pressed;
+      down = g.buttons[this.stickAttach.down].pressed;
+      left = g.buttons[this.stickAttach.left].pressed;
+      right = g.buttons[this.stickAttach.right].pressed;
+    }
+    if (up && !down) {
+      if (left) dir = 7;
+      else if (right) dir = 1;
+      else dir = 0;
+    } else if (right && !left) {
+      if (down) dir = 3;
+      else dir = 2;
+    } else if (down) {
+      if (left) dir = 5;
+      else dir = 4;
+    } else if (left) {
+      dir = 6;
     }
     info.stick = this.dirToStickInfo(dir, preInfo);
 

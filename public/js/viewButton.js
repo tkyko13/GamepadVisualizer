@@ -1,13 +1,17 @@
 class ViewButton {
-  constructor(x, y, sz) {
+  constructor(x, y, width, height, type = 'ellipse', label = '', colorCode = '#FFB4B4') {
     this.x = x;
     this.y = y;
-    this.sz = sz;
+    this.width = width;
+    this.height = height;
+    this.type = type;
+    this.label = label;
     this.drawFrame = true;
     this.isPush = false;
     this.passPushFrame = 0;
-    this.frameNum = -1;
-    this.color = color(255, 180, 180);
+    // this.frameNum = -1;
+    this.color = color(colorCode);//color(255, 180, 180);
+    // this.color = color('#FFB4B4');
   }
 
   update(isPush) {
@@ -31,7 +35,7 @@ class ViewButton {
     if (this.drawFrame) {
       stroke(0);
       // noStroke();
-      ellipse(0, 0, this.sz);
+      this.drawGrapics(this.width, this.height, this.type);
     }
 
     // 残像
@@ -41,8 +45,18 @@ class ViewButton {
         // fill(255, rf * 255, rf * 255);
         fill(this.color);
         noStroke();
-        ellipse(0, 0, this.sz - rf * this.sz);
+        // ellipse(0, 0, this.width - rf * this.width, this.height - rf * this.height);
+        this.drawGrapics(this.width - rf * this.width, this.height - rf * this.height, this.type);
       }
+    }
+
+    // label
+    if (this.label) {
+      textAlign(CENTER, CENTER);
+      textSize(18);
+      fill(0);
+      noStroke();
+      text(this.label, 0, 0);
     }
 
     // frame num
@@ -57,6 +71,17 @@ class ViewButton {
     // }
 
     pop();
+  }
+
+  drawGrapics(width, height, type) {
+    switch (type) {
+      case 'ellipse':
+        ellipse(0, 0, width, height);
+        break;
+      case 'rect':
+        rect(-width / 2, -height / 2, width, height);
+        break;
+    }
   }
 
 
