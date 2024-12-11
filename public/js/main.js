@@ -53,7 +53,7 @@ function setup() {
 }
 
 function draw() {
-  background(230);
+  // background(230);
 
   gamepad.update();
   if (gamepad.info) {
